@@ -31,6 +31,7 @@ fetchIPs = () => {
       else ips[1] = address;
 
       display();
+      store();
     }
   };
 
