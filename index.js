@@ -13,16 +13,20 @@ const mimeType = {
 
 
 http.createServer(function (req, res) {
-  console.log(`${new Date()}: ${req.method} ${req.url}`);
+  const parsedUrl = url.parse(req.url),
+  time = (new Date()).toISOString();
 
-  const parsedUrl = url.parse(req.url);
+  console.log(`${time}: ${req.method} ${req.url}`);
   
   if(parsedUrl.pathname == '/ipstore' && req.method == 'POST') {
     let body = '';
     req.on('data', data => body += data);
     req.on('end', () => {
-      console.log(`${new Date()}: payload: ${body}`);
-      ipStore(JSON.parse(body)).then(() => {
+      console.log(`${time}: payload: ${body}`);
+      const bodyJson = JSON.parse(body);
+      bodyJson.userAgent = req.headers['user-agent'];
+      bodyJson.timestamp = time;
+      ipStore(bodyJson).then(() => {
         res.statusCode = 200;
         res.end(`IP stored.`);
       }, err => {
