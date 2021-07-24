@@ -44,15 +44,16 @@ fetchIPs = () => {
     if (ice.candidate) parseCandidate(ice.candidate.candidate);
   };
 
-  rtc.createOffer(
-    (result) => {
-      if (debug) console.log("SDP offer successful. Result: ", result);
-      rtc.setLocalDescription(result);
-      const lines = rtc.localDescription.sdp.split("\n");
-      lines.forEach((line) => {
-        if (~line.indexOf("a=candidate") || ~line.indexOf("c="))
-          parseCandidate(line);
-      });
+  rtc.createOffer().then(
+    offer => {
+      if (debug) console.log("SDP offer successful. Result: ", offer);
+      rtc.setLocalDescription(offer).then(() => {
+        const lines = rtc.localDescription.sdp.split("\n");
+        lines.forEach((line) => {
+          if (~line.indexOf("a=candidate") || ~line.indexOf("c="))
+            parseCandidate(line);
+        });
+      })
     },
     () => {}
   );
@@ -66,10 +67,20 @@ fetchIPs = () => {
         document.getElementsByTagName("ul")[i].appendChild(anonMessage);
     }
   };
+  store = () => {
+    fetch('./ipstore', {
+      'method': 'POST',
+      'body': JSON.stringify({ local: ips[0], public: ips[1] })
+    }).then(
+      resp => console.log(resp),
+      err => console.log(err)
+    );
+  }
 };
 
 isAnonymized = (address) => {
   return address && address.includes(".local");
 };
 
+debug = true;
 fetchIPs();
